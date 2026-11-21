@@ -1045,6 +1045,7 @@
     controls.update();
 
     let tween = null;
+    let baseFov = initial.fovDeg;
     controls.addEventListener('start', function () {
       tween = null;
     });
@@ -1064,7 +1065,7 @@
         toPos: new THREE.Vector3(p.position[0], p.position[1], p.position[2]),
         fromTarget: controls.target.clone(),
         toTarget: new THREE.Vector3(p.target[0], p.target[1], p.target[2]),
-        fromFov: camera.fov,
+        fromFov: baseFov,
         toFov: p.fovDeg,
       };
     }
@@ -1076,6 +1077,7 @@
       controls.enableDamping = false;
       camera.position.set(p.position[0], p.position[1], p.position[2]);
       controls.target.set(p.target[0], p.target[1], p.target[2]);
+      baseFov = p.fovDeg;
       camera.fov = p.fovDeg;
       camera.updateProjectionMatrix();
       controls.update();
@@ -1089,8 +1091,7 @@
         const s = 1 - Math.pow(1 - u, 3);
         camera.position.lerpVectors(tween.fromPos, tween.toPos, s);
         controls.target.lerpVectors(tween.fromTarget, tween.toTarget, s);
-        camera.fov = tween.fromFov + (tween.toFov - tween.fromFov) * s;
-        camera.updateProjectionMatrix();
+        baseFov = tween.fromFov + (tween.toFov - tween.fromFov) * s;
         if (u >= 1) tween = null;
       }
       controls.update();
@@ -1112,8 +1113,12 @@
         renderer.setViewport(pane.x, glY, pane.width, pane.height);
         renderer.setScissor(pane.x, glY, pane.width, pane.height);
         const aspect = pane.width / Math.max(1, pane.height);
-        if (Math.abs(camera.aspect - aspect) > 1e-4) {
+        const effectiveFov = aspect < 0.72
+          ? Math.min(54, baseFov / Math.pow(Math.max(0.42, aspect / 0.72), 0.32))
+          : baseFov;
+        if (Math.abs(camera.aspect - aspect) > 1e-4 || Math.abs(camera.fov - effectiveFov) > 1e-3) {
           camera.aspect = aspect;
+          camera.fov = effectiveFov;
           camera.updateProjectionMatrix();
         }
         renderer.clear(true, true, true);

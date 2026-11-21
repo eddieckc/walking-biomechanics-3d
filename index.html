@@ -47,35 +47,44 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 8px 12px;
       padding: 8px 14px;
       background: #121823;
       border-bottom: 1px solid #263142;
-      z-index: 10;
+      z-index: 20;
     }
-    .brand-block {
+    .brand-row {
       display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-    .eyebrow {
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #94a3b8;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex: 0 0 auto;
     }
     .title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: #f8fafc;
       margin: 0;
+      white-space: nowrap;
     }
     .bar-group {
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 6px;
     }
+    .habit-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 1px 0;
+    }
+    .habit-strip::-webkit-scrollbar { display: none; }
     .pill-btn {
       font-size: 12px;
       padding: 5px 11px;
@@ -85,6 +94,7 @@
       color: #cbd5e1;
       cursor: pointer;
       white-space: nowrap;
+      flex: 0 0 auto;
       transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
     }
     .pill-btn:hover { border-color: #64748b; color: #f8fafc; }
@@ -94,17 +104,18 @@
       color: #ffffff;
       font-weight: 600;
     }
-    .mini-btn {
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 6px;
+    .mini-btn, .mini-select {
+      font-size: 11.5px;
+      padding: 5px 9px;
+      border-radius: 7px;
       border: 1px solid #2d394b;
-      background: rgba(18, 24, 35, 0.86);
+      background: #17202e;
       color: #cbd5e1;
       cursor: pointer;
       white-space: nowrap;
+      flex: 0 0 auto;
     }
-    .mini-btn:hover { border-color: #64748b; color: #ffffff; }
+    .mini-btn:hover, .mini-select:hover { border-color: #64748b; color: #ffffff; }
     .mini-btn[aria-pressed="true"] {
       background: #1e3a5f;
       border-color: #60a5fa;
@@ -123,6 +134,7 @@
       width: 100%;
       height: 100%;
       cursor: grab;
+      touch-action: none;
     }
     #webgl-canvas:active { cursor: grabbing; }
     #split-divider {
@@ -131,7 +143,7 @@
       bottom: 0;
       left: 50%;
       width: 1px;
-      border-left: 1px dashed rgba(148, 163, 184, 0.45);
+      border-left: 1px dashed rgba(148, 163, 184, 0.4);
       pointer-events: none;
     }
     .pane-badge {
@@ -143,58 +155,31 @@
       border-radius: 999px;
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       pointer-events: none;
+      max-width: calc(50% - 16px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     #pane-left-badge {
-      left: 12px;
+      left: 10px;
       background: rgba(234, 88, 12, 0.22);
       border: 1px solid rgba(251, 146, 60, 0.65);
       color: #fdba74;
     }
     #pane-right-badge {
-      right: 12px;
+      right: 10px;
       background: rgba(37, 99, 235, 0.22);
       border: 1px solid rgba(96, 165, 250, 0.65);
       color: #93c5fd;
     }
-    .stage-hud-bottom {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      pointer-events: none;
-    }
-    .stage-hud-bottom > div {
-      pointer-events: auto;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      background: rgba(15, 20, 28, 0.72);
-      padding: 4px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
     .heat-legend {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(15, 20, 28, 0.78);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-size: 10px;
-      color: #cbd5e1;
-      pointer-events: none;
+      font-size: 10.5px;
+      color: #94a3b8;
     }
     .heat-bar {
       width: 68px;
@@ -207,34 +192,60 @@
       border-top: 1px solid #263142;
       padding: 8px 14px 10px;
       display: grid;
-      grid-template-columns: minmax(280px, 1fr) minmax(360px, 1.35fr);
-      gap: 12px;
+      grid-template-columns: minmax(300px, 1.05fr) minmax(360px, 1.25fr);
+      gap: 10px 14px;
       align-items: center;
-      z-index: 10;
-    }
-    @media (max-width: 900px) {
-      .bottom-dock { grid-template-columns: 1fr; }
+      z-index: 20;
     }
     .playback-col {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
     }
     .playback-row {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tools-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .popover-card {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
+      background: #161f2e;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px;
+      width: 240px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+      z-index: 35;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .popover-card[hidden] { display: none; }
+    .popover-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 6px;
     }
     #phase-scrubber {
-      flex: 1;
+      flex: 1 1 120px;
+      min-width: 90px;
       accent-color: #3b82f6;
       cursor: pointer;
     }
     #phase-readout {
       font-size: 11px;
       color: #cbd5e1;
-      min-width: 128px;
-      text-align: right;
+      white-space: nowrap;
     }
     .summary-line {
       font-size: 11.5px;
@@ -288,11 +299,15 @@
       padding: 18px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
     }
+    .proof-table-wrap {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
     .proof-table {
       width: 100%;
+      min-width: 560px;
       border-collapse: collapse;
       font-size: 12px;
-      margin-top: 10px;
     }
     .proof-table th, .proof-table td {
       text-align: left;
@@ -300,58 +315,98 @@
       border-bottom: 1px solid #263142;
     }
     .proof-table th { color: #94a3b8; font-weight: 600; font-size: 11px; text-transform: uppercase; }
-    button:focus-visible, input:focus-visible {
+    button:focus-visible, input:focus-visible, select:focus-visible {
       outline: 2px solid #60a5fa;
       outline-offset: 2px;
+    }
+    @media (max-width: 899px) {
+      html, body {
+        height: auto;
+        min-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .app-shell {
+        height: auto;
+        min-height: 100dvh;
+        width: 100%;
+      }
+      .top-bar {
+        padding: 8px 12px;
+        gap: 8px;
+      }
+      .brand-row {
+        width: 100%;
+      }
+      .stage-wrap {
+        height: 52dvh;
+        min-height: 360px;
+        max-height: 480px;
+        flex: 0 0 auto;
+      }
+      .pane-badge {
+        top: 8px;
+        font-size: 10px;
+        padding: 3px 8px;
+      }
+      .bottom-dock {
+        grid-template-columns: 1fr;
+        padding: 10px 12px 18px;
+      }
+      #telemetry-canvas {
+        height: 186px;
+      }
+      .popover-card {
+        left: auto;
+        right: 0;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app-shell">
     <header class="top-bar">
-      <div class="brand-block">
-        <span class="eyebrow mono">3D Musculoskeletal Gait Biomechanics | Three.js r161</span>
-        <h1 class="title">How Walking Form Loads Joints, Tendons, and Muscles</h1>
+      <div class="brand-row">
+        <h1 class="title">Walking Biomechanics 3D</h1>
+        <div class="bar-group">
+          <button id="btn-layout" type="button" class="mini-btn">Single View</button>
+          <button id="btn-evidence" type="button" class="mini-btn">Proof</button>
+        </div>
       </div>
-      <div id="habit-bar" class="bar-group" role="group" aria-label="Select walking habit"></div>
-      <div class="bar-group">
-        <button id="btn-layout" type="button" class="mini-btn">Focus Active Only</button>
-        <button id="btn-evidence" type="button" class="mini-btn">Clinical Proof Table</button>
-      </div>
+      <div id="habit-bar" class="habit-strip" role="group" aria-label="Select walking habit"></div>
     </header>
 
     <div class="stage-wrap">
       <canvas id="webgl-canvas"></canvas>
       <div id="split-divider"></div>
-      <span id="pane-left-badge" class="pane-badge mono">LEFT: Overstride</span>
-      <span id="pane-right-badge" class="pane-badge mono">RIGHT: Healthy Baseline</span>
-      <div class="heat-legend mono">
-        <span>EMG / Stress</span>
-        <span class="heat-bar"></span>
-        <span>Low to Overload</span>
-      </div>
-      <div class="stage-hud-bottom">
-        <div id="preset-bar" role="group" aria-label="Camera presets"></div>
-        <div id="overlay-bar" role="group" aria-label="Anatomical layers">
-          <button type="button" class="mini-btn" data-overlay="muscles" aria-pressed="true">Muscles &amp; Tendons</button>
-          <button type="button" class="mini-btn" data-overlay="grf" aria-pressed="true">GRF Vectors</button>
-          <button type="button" class="mini-btn" data-overlay="comRibbon" aria-pressed="true">COM Arc</button>
-          <button type="button" class="mini-btn" data-overlay="xray" aria-pressed="false">Bone X-Ray</button>
-        </div>
-      </div>
+      <span id="pane-left-badge" class="pane-badge mono">Overstride</span>
+      <span id="pane-right-badge" class="pane-badge mono">Healthy Baseline</span>
     </div>
 
     <footer class="bottom-dock">
       <div class="playback-col">
         <div class="playback-row">
           <button id="btn-play" type="button" class="mini-btn mono">Pause</button>
-          <div id="speed-bar" class="bar-group" role="group" aria-label="Playback speed">
-            <button type="button" class="mini-btn mono" data-speed="0.25" aria-pressed="false">0.25x</button>
-            <button type="button" class="mini-btn mono" data-speed="0.5" aria-pressed="true">0.5x</button>
-            <button type="button" class="mini-btn mono" data-speed="1" aria-pressed="false">1.0x</button>
-          </div>
+          <button id="btn-speed" type="button" class="mini-btn mono" aria-label="Cycle playback speed">0.5x</button>
           <input id="phase-scrubber" type="range" min="0" max="99" value="12" aria-label="Gait cycle percentage" />
           <span id="phase-readout" class="mono">12% Loading Response</span>
+          <div class="tools-wrap">
+            <select id="preset-select" class="mini-select" aria-label="Camera angle"></select>
+            <button id="btn-layers" type="button" class="mini-btn" aria-expanded="false" aria-controls="layers-popover">Layers</button>
+            <div id="layers-popover" class="popover-card" hidden>
+              <div id="overlay-bar" class="popover-grid" role="group" aria-label="Anatomical layers">
+                <button type="button" class="mini-btn" data-overlay="muscles" aria-pressed="true">Muscles</button>
+                <button type="button" class="mini-btn" data-overlay="grf" aria-pressed="true">GRF Arrow</button>
+                <button type="button" class="mini-btn" data-overlay="comRibbon" aria-pressed="true">COM Arc</button>
+                <button type="button" class="mini-btn" data-overlay="xray" aria-pressed="false">Bone X-Ray</button>
+              </div>
+              <div class="heat-legend mono">
+                <span>Stress</span>
+                <span class="heat-bar"></span>
+                <span>Overload</span>
+              </div>
+            </div>
+          </div>
         </div>
         <p id="habit-summary" class="summary-line"></p>
         <div id="habit-badges" class="badges-row"></div>
@@ -364,26 +419,28 @@
 
   <div id="evidence-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="proof-title">
     <div class="modal-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
         <h2 id="proof-title" style="margin:0;font-size:16px;">Verified Biomechanical Invariants Across 200 Cycle Phases</h2>
         <button id="btn-close-evidence" type="button" class="mini-btn">Close (Esc)</button>
       </div>
       <p style="margin:6px 0 0;font-size:12px;color:#94a3b8;">
         All 3D limb trajectories and 2D curves share one verified pure core checked at startup before WebGL initialization. Orange solid lines show the selected habit; blue dashed lines show the healthy baseline (Winter 2009 / Perry framework).
       </p>
-      <table class="proof-table mono">
-        <thead>
-          <tr>
-            <th>Habit</th>
-            <th>COM Arc</th>
-            <th>Peak Braking</th>
-            <th>Min Heel Y</th>
-            <th>Floor Clip</th>
-            <th>Primary Citations</th>
-          </tr>
-        </thead>
-        <tbody id="proof-table-body"></tbody>
-      </table>
+      <div class="proof-table-wrap">
+        <table class="proof-table mono">
+          <thead>
+            <tr>
+              <th>Habit</th>
+              <th>COM Arc</th>
+              <th>Peak Braking</th>
+              <th>Min Heel Y</th>
+              <th>Floor Clip</th>
+              <th>Primary Citations</th>
+            </tr>
+          </thead>
+          <tbody id="proof-table-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -4117,6 +4174,7 @@ THREE.OrbitControls = OrbitControls;
     controls.update();
 
     let tween = null;
+    let baseFov = initial.fovDeg;
     controls.addEventListener('start', function () {
       tween = null;
     });
@@ -4136,7 +4194,7 @@ THREE.OrbitControls = OrbitControls;
         toPos: new THREE.Vector3(p.position[0], p.position[1], p.position[2]),
         fromTarget: controls.target.clone(),
         toTarget: new THREE.Vector3(p.target[0], p.target[1], p.target[2]),
-        fromFov: camera.fov,
+        fromFov: baseFov,
         toFov: p.fovDeg,
       };
     }
@@ -4148,6 +4206,7 @@ THREE.OrbitControls = OrbitControls;
       controls.enableDamping = false;
       camera.position.set(p.position[0], p.position[1], p.position[2]);
       controls.target.set(p.target[0], p.target[1], p.target[2]);
+      baseFov = p.fovDeg;
       camera.fov = p.fovDeg;
       camera.updateProjectionMatrix();
       controls.update();
@@ -4161,8 +4220,7 @@ THREE.OrbitControls = OrbitControls;
         const s = 1 - Math.pow(1 - u, 3);
         camera.position.lerpVectors(tween.fromPos, tween.toPos, s);
         controls.target.lerpVectors(tween.fromTarget, tween.toTarget, s);
-        camera.fov = tween.fromFov + (tween.toFov - tween.fromFov) * s;
-        camera.updateProjectionMatrix();
+        baseFov = tween.fromFov + (tween.toFov - tween.fromFov) * s;
         if (u >= 1) tween = null;
       }
       controls.update();
@@ -4184,8 +4242,12 @@ THREE.OrbitControls = OrbitControls;
         renderer.setViewport(pane.x, glY, pane.width, pane.height);
         renderer.setScissor(pane.x, glY, pane.width, pane.height);
         const aspect = pane.width / Math.max(1, pane.height);
-        if (Math.abs(camera.aspect - aspect) > 1e-4) {
+        const effectiveFov = aspect < 0.72
+          ? Math.min(54, baseFov / Math.pow(Math.max(0.42, aspect / 0.72), 0.32))
+          : baseFov;
+        if (Math.abs(camera.aspect - aspect) > 1e-4 || Math.abs(camera.fov - effectiveFov) > 1e-3) {
           camera.aspect = aspect;
+          camera.fov = effectiveFov;
           camera.updateProjectionMatrix();
         }
         renderer.clear(true, true, true);
@@ -4331,9 +4393,7 @@ THREE.OrbitControls = OrbitControls;
       ctx.clearRect(0, 0, cssW, cssH);
 
       const gap = 8;
-      const cols = 3;
-      const cw = (cssW - gap * (cols - 1)) / cols;
-      const ch = cssH;
+      const isNarrow = cssW < 520;
 
       if (!vGrfPct || vGrfPct.length !== series.sampleCount) {
         vGrfPct = new Float32Array(series.sampleCount);
@@ -4348,9 +4408,18 @@ THREE.OrbitControls = OrbitControls;
         refStressPct[i] = series.refStress01[i] * 100;
       }
 
-      drawChannel({ x: 0, y: 0, w: cw, h: ch }, 'Knee Angle (deg)', series.kneeDeg, series.refKneeDeg, 0, 75, phase01, ' deg');
-      drawChannel({ x: cw + gap, y: 0, w: cw, h: ch }, 'Vertical GRF (%BW)', vGrfPct, refVGrfPct, 0, 145, phase01, '%');
-      drawChannel({ x: (cw + gap) * 2, y: 0, w: cw, h: ch }, 'Peak Joint Stress', stressPct, refStressPct, 0, 100, phase01, '%');
+      if (isNarrow) {
+        const rh = (cssH - gap * 2) / 3;
+        drawChannel({ x: 0, y: 0, w: cssW, h: rh }, 'Knee Angle (deg)', series.kneeDeg, series.refKneeDeg, 0, 75, phase01, ' deg');
+        drawChannel({ x: 0, y: rh + gap, w: cssW, h: rh }, 'Vertical GRF (%BW)', vGrfPct, refVGrfPct, 0, 145, phase01, '%');
+        drawChannel({ x: 0, y: (rh + gap) * 2, w: cssW, h: rh }, 'Peak Joint Stress', stressPct, refStressPct, 0, 100, phase01, '%');
+      } else {
+        const cw = (cssW - gap * 2) / 3;
+        const ch = cssH;
+        drawChannel({ x: 0, y: 0, w: cw, h: ch }, 'Knee Angle (deg)', series.kneeDeg, series.refKneeDeg, 0, 75, phase01, ' deg');
+        drawChannel({ x: cw + gap, y: 0, w: cw, h: ch }, 'Vertical GRF (%BW)', vGrfPct, refVGrfPct, 0, 145, phase01, '%');
+        drawChannel({ x: (cw + gap) * 2, y: 0, w: cw, h: ch }, 'Peak Joint Stress', stressPct, refStressPct, 0, 100, phase01, '%');
+      }
       ctx.restore();
     }
 
@@ -4410,9 +4479,14 @@ THREE.OrbitControls = OrbitControls;
     const scrubberEl = document.getElementById('phase-scrubber');
     const phaseReadoutEl = document.getElementById('phase-readout');
     const playBtn = document.getElementById('btn-play');
+    const speedBtn = document.getElementById('btn-speed');
     const layoutBtn = document.getElementById('btn-layout');
+    const presetSelectEl = document.getElementById('preset-select');
+    const layersBtn = document.getElementById('btn-layers');
+    const layersPopover = document.getElementById('layers-popover');
     const evidenceModal = document.getElementById('evidence-modal');
     const proofTableEl = document.getElementById('proof-table-body');
+    const speedSteps = [0.25, 0.5, 1];
 
     const sharedGeoms = GaitThreeRig.createSharedBoneGeometries(registry.anthropometrics);
     const activeRig = GaitThreeRig.createAnatomicalWalkerRig({
@@ -4450,12 +4524,8 @@ THREE.OrbitControls = OrbitControls;
       document.querySelectorAll('[data-habit]').forEach(function (btn) {
         btn.setAttribute('aria-pressed', String(btn.dataset.habit === state.habitId));
       });
-      document.querySelectorAll('[data-preset]').forEach(function (btn) {
-        btn.setAttribute('aria-pressed', String(btn.dataset.preset === state.presetId));
-      });
-      document.querySelectorAll('[data-speed]').forEach(function (btn) {
-        btn.setAttribute('aria-pressed', String(Number(btn.dataset.speed) === state.speed));
-      });
+      presetSelectEl.value = state.presetId;
+      speedBtn.textContent = (state.speed === 1 ? '1.0' : String(state.speed)) + 'x';
       document.querySelectorAll('[data-overlay]').forEach(function (btn) {
         const key = btn.dataset.overlay;
         btn.setAttribute('aria-pressed', String(Boolean(state.overlays[key])));
@@ -4465,9 +4535,9 @@ THREE.OrbitControls = OrbitControls;
       splitDivider.style.display = isSplit ? 'block' : 'none';
       rightBadge.style.display = isSplit ? 'inline-flex' : 'none';
       leftBadge.textContent = isSplit
-        ? ('LEFT: ' + profile.shortLabel)
-        : (state.layoutKind === 'hero_healthy' ? 'FOCUS: Healthy Baseline' : ('FOCUS: ' + profile.shortLabel));
-      layoutBtn.textContent = isSplit ? 'Focus Active Only' : 'Split Compare';
+        ? profile.shortLabel
+        : (state.layoutKind === 'hero_healthy' ? 'Focus: Healthy Baseline' : ('Focus: ' + profile.shortLabel));
+      layoutBtn.textContent = isSplit ? 'Single View' : 'Split View';
       playBtn.textContent = state.playing ? 'Pause' : 'Play';
       scrubberEl.value = String(Math.floor(state.phase01 * 100));
       phaseReadoutEl.textContent = describeGaitPhase(state.phase01);
@@ -4479,10 +4549,9 @@ THREE.OrbitControls = OrbitControls;
       return '<button type="button" class="pill-btn" data-habit="' + id + '" aria-pressed="false">' + p.shortLabel + '</button>';
     }).join('');
 
-    const presetBar = document.getElementById('preset-bar');
-    presetBar.innerHTML = Object.keys(GaitCore.CAMERA_PRESETS).map(function (id) {
+    presetSelectEl.innerHTML = Object.keys(GaitCore.CAMERA_PRESETS).map(function (id) {
       const c = GaitCore.CAMERA_PRESETS[id];
-      return '<button type="button" class="mini-btn" data-preset="' + id + '" aria-pressed="false">' + c.label + '</button>';
+      return '<option value="' + id + '">' + c.label + '</option>';
     }).join('');
 
     proofTableEl.innerHTML = registry.orderedIds.map(function (id) {
@@ -4504,12 +4573,27 @@ THREE.OrbitControls = OrbitControls;
       renderOnce(0, 0);
     });
 
-    presetBar.addEventListener('click', function (ev) {
-      const btn = ev.target.closest('[data-preset]');
-      if (!btn) return;
-      state.presetId = GaitCore.parseCameraPresetId(btn.dataset.preset);
+    presetSelectEl.addEventListener('change', function (ev) {
+      state.presetId = GaitCore.parseCameraPresetId(ev.target.value);
       viewport.setPreset(state.presetId);
       syncUi();
+    });
+
+    function setLayersOpen(nextOpen) {
+      const open = Boolean(nextOpen);
+      layersPopover.hidden = !open;
+      layersBtn.setAttribute('aria-expanded', String(open));
+    }
+
+    layersBtn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      setLayersOpen(layersPopover.hidden);
+    });
+
+    document.addEventListener('click', function (ev) {
+      if (!layersPopover.hidden && !layersPopover.contains(ev.target) && ev.target !== layersBtn) {
+        setLayersOpen(false);
+      }
     });
 
     document.getElementById('overlay-bar').addEventListener('click', function (ev) {
@@ -4521,10 +4605,9 @@ THREE.OrbitControls = OrbitControls;
       renderOnce(0, 0);
     });
 
-    document.getElementById('speed-bar').addEventListener('click', function (ev) {
-      const btn = ev.target.closest('[data-speed]');
-      if (!btn) return;
-      state.speed = Number(btn.dataset.speed);
+    speedBtn.addEventListener('click', function () {
+      const idx = speedSteps.indexOf(state.speed);
+      state.speed = speedSteps[(idx + 1) % speedSteps.length];
       syncUi();
     });
 
@@ -4575,12 +4658,17 @@ THREE.OrbitControls = OrbitControls;
     });
 
     global.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && state.evidenceOpen) {
-        setEvidenceOpen(false);
+      if (ev.key === 'Escape') {
+        if (!layersPopover.hidden) {
+          setLayersOpen(false);
+        }
+        if (state.evidenceOpen) {
+          setEvidenceOpen(false);
+        }
         return;
       }
       if (state.evidenceOpen) return;
-      if (ev.code === 'Space' && ev.target.tagName !== 'BUTTON' && ev.target.tagName !== 'INPUT') {
+      if (ev.code === 'Space' && ev.target.tagName !== 'BUTTON' && ev.target.tagName !== 'INPUT' && ev.target.tagName !== 'SELECT') {
         ev.preventDefault();
         state.playing = !state.playing;
         syncUi();

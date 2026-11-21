@@ -130,9 +130,7 @@
       ctx.clearRect(0, 0, cssW, cssH);
 
       const gap = 8;
-      const cols = 3;
-      const cw = (cssW - gap * (cols - 1)) / cols;
-      const ch = cssH;
+      const isNarrow = cssW < 520;
 
       if (!vGrfPct || vGrfPct.length !== series.sampleCount) {
         vGrfPct = new Float32Array(series.sampleCount);
@@ -147,9 +145,18 @@
         refStressPct[i] = series.refStress01[i] * 100;
       }
 
-      drawChannel({ x: 0, y: 0, w: cw, h: ch }, 'Knee Angle (deg)', series.kneeDeg, series.refKneeDeg, 0, 75, phase01, ' deg');
-      drawChannel({ x: cw + gap, y: 0, w: cw, h: ch }, 'Vertical GRF (%BW)', vGrfPct, refVGrfPct, 0, 145, phase01, '%');
-      drawChannel({ x: (cw + gap) * 2, y: 0, w: cw, h: ch }, 'Peak Joint Stress', stressPct, refStressPct, 0, 100, phase01, '%');
+      if (isNarrow) {
+        const rh = (cssH - gap * 2) / 3;
+        drawChannel({ x: 0, y: 0, w: cssW, h: rh }, 'Knee Angle (deg)', series.kneeDeg, series.refKneeDeg, 0, 75, phase01, ' deg');
+        drawChannel({ x: 0, y: rh + gap, w: cssW, h: rh }, 'Vertical GRF (%BW)', vGrfPct, refVGrfPct, 0, 145, phase01, '%');
+        drawChannel({ x: 0, y: (rh + gap) * 2, w: cssW, h: rh }, 'Peak Joint Stress', stressPct, refStressPct, 0, 100, phase01, '%');
+      } else {
+        const cw = (cssW - gap * 2) / 3;
+        const ch = cssH;
+        drawChannel({ x: 0, y: 0, w: cw, h: ch }, 'Knee Angle (deg)', series.kneeDeg, series.refKneeDeg, 0, 75, phase01, ' deg');
+        drawChannel({ x: cw + gap, y: 0, w: cw, h: ch }, 'Vertical GRF (%BW)', vGrfPct, refVGrfPct, 0, 145, phase01, '%');
+        drawChannel({ x: (cw + gap) * 2, y: 0, w: cw, h: ch }, 'Peak Joint Stress', stressPct, refStressPct, 0, 100, phase01, '%');
+      }
       ctx.restore();
     }
 
@@ -209,9 +216,14 @@
     const scrubberEl = document.getElementById('phase-scrubber');
     const phaseReadoutEl = document.getElementById('phase-readout');
     const playBtn = document.getElementById('btn-play');
+    const speedBtn = document.getElementById('btn-speed');
     const layoutBtn = document.getElementById('btn-layout');
+    const presetSelectEl = document.getElementById('preset-select');
+    const layersBtn = document.getElementById('btn-layers');
+    const layersPopover = document.getElementById('layers-popover');
     const evidenceModal = document.getElementById('evidence-modal');
     const proofTableEl = document.getElementById('proof-table-body');
+    const speedSteps = [0.25, 0.5, 1];
 
     const sharedGeoms = GaitThreeRig.createSharedBoneGeometries(registry.anthropometrics);
     const activeRig = GaitThreeRig.createAnatomicalWalkerRig({
@@ -249,12 +261,8 @@
       document.querySelectorAll('[data-habit]').forEach(function (btn) {
         btn.setAttribute('aria-pressed', String(btn.dataset.habit === state.habitId));
       });
-      document.querySelectorAll('[data-preset]').forEach(function (btn) {
-        btn.setAttribute('aria-pressed', String(btn.dataset.preset === state.presetId));
-      });
-      document.querySelectorAll('[data-speed]').forEach(function (btn) {
-        btn.setAttribute('aria-pressed', String(Number(btn.dataset.speed) === state.speed));
-      });
+      presetSelectEl.value = state.presetId;
+      speedBtn.textContent = (state.speed === 1 ? '1.0' : String(state.speed)) + 'x';
       document.querySelectorAll('[data-overlay]').forEach(function (btn) {
         const key = btn.dataset.overlay;
         btn.setAttribute('aria-pressed', String(Boolean(state.overlays[key])));
@@ -264,9 +272,9 @@
       splitDivider.style.display = isSplit ? 'block' : 'none';
       rightBadge.style.display = isSplit ? 'inline-flex' : 'none';
       leftBadge.textContent = isSplit
-        ? ('LEFT: ' + profile.shortLabel)
-        : (state.layoutKind === 'hero_healthy' ? 'FOCUS: Healthy Baseline' : ('FOCUS: ' + profile.shortLabel));
-      layoutBtn.textContent = isSplit ? 'Focus Active Only' : 'Split Compare';
+        ? profile.shortLabel
+        : (state.layoutKind === 'hero_healthy' ? 'Focus: Healthy Baseline' : ('Focus: ' + profile.shortLabel));
+      layoutBtn.textContent = isSplit ? 'Single View' : 'Split View';
       playBtn.textContent = state.playing ? 'Pause' : 'Play';
       scrubberEl.value = String(Math.floor(state.phase01 * 100));
       phaseReadoutEl.textContent = describeGaitPhase(state.phase01);
@@ -278,10 +286,9 @@
       return '<button type="button" class="pill-btn" data-habit="' + id + '" aria-pressed="false">' + p.shortLabel + '</button>';
     }).join('');
 
-    const presetBar = document.getElementById('preset-bar');
-    presetBar.innerHTML = Object.keys(GaitCore.CAMERA_PRESETS).map(function (id) {
+    presetSelectEl.innerHTML = Object.keys(GaitCore.CAMERA_PRESETS).map(function (id) {
       const c = GaitCore.CAMERA_PRESETS[id];
-      return '<button type="button" class="mini-btn" data-preset="' + id + '" aria-pressed="false">' + c.label + '</button>';
+      return '<option value="' + id + '">' + c.label + '</option>';
     }).join('');
 
     proofTableEl.innerHTML = registry.orderedIds.map(function (id) {
@@ -303,12 +310,27 @@
       renderOnce(0, 0);
     });
 
-    presetBar.addEventListener('click', function (ev) {
-      const btn = ev.target.closest('[data-preset]');
-      if (!btn) return;
-      state.presetId = GaitCore.parseCameraPresetId(btn.dataset.preset);
+    presetSelectEl.addEventListener('change', function (ev) {
+      state.presetId = GaitCore.parseCameraPresetId(ev.target.value);
       viewport.setPreset(state.presetId);
       syncUi();
+    });
+
+    function setLayersOpen(nextOpen) {
+      const open = Boolean(nextOpen);
+      layersPopover.hidden = !open;
+      layersBtn.setAttribute('aria-expanded', String(open));
+    }
+
+    layersBtn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      setLayersOpen(layersPopover.hidden);
+    });
+
+    document.addEventListener('click', function (ev) {
+      if (!layersPopover.hidden && !layersPopover.contains(ev.target) && ev.target !== layersBtn) {
+        setLayersOpen(false);
+      }
     });
 
     document.getElementById('overlay-bar').addEventListener('click', function (ev) {
@@ -320,10 +342,9 @@
       renderOnce(0, 0);
     });
 
-    document.getElementById('speed-bar').addEventListener('click', function (ev) {
-      const btn = ev.target.closest('[data-speed]');
-      if (!btn) return;
-      state.speed = Number(btn.dataset.speed);
+    speedBtn.addEventListener('click', function () {
+      const idx = speedSteps.indexOf(state.speed);
+      state.speed = speedSteps[(idx + 1) % speedSteps.length];
       syncUi();
     });
 
@@ -374,12 +395,17 @@
     });
 
     global.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && state.evidenceOpen) {
-        setEvidenceOpen(false);
+      if (ev.key === 'Escape') {
+        if (!layersPopover.hidden) {
+          setLayersOpen(false);
+        }
+        if (state.evidenceOpen) {
+          setEvidenceOpen(false);
+        }
         return;
       }
       if (state.evidenceOpen) return;
-      if (ev.code === 'Space' && ev.target.tagName !== 'BUTTON' && ev.target.tagName !== 'INPUT') {
+      if (ev.code === 'Space' && ev.target.tagName !== 'BUTTON' && ev.target.tagName !== 'INPUT' && ev.target.tagName !== 'SELECT') {
         ev.preventDefault();
         state.playing = !state.playing;
         syncUi();
