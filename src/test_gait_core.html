@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><title>Gait Core &amp; Invariants Test Runner</title></head>
+<body>
+  <pre id="test-output">RUNNING</pre>
+  <script src="gait_core.js"></script>
+  <script src="gait_invariants.js"></script>
+  <script>
+    (function () {
+      const results = [];
+      function assert(name, cond, detail) {
+        if (!cond) {
+          throw new Error('ASSERT_FAIL ' + name + (detail ? ': ' + detail : ''));
+        }
+        results.push('PASS ' + name);
+      }
+
+      try {
+        const { registry, report } = GaitInvariants.createVerifiedGaitRegistry({ heightM: 1.75, bodyMassKg: 72 });
+        assert('biomechanics_suite_passed', report.passed, JSON.stringify(report.failures));
+        assert('checks_executed_count', report.checksExecuted >= 20, 'count=' + report.checksExecuted);
+
+        let threwBadHabit = false;
+        try { GaitCore.parseHabitId('moonwalk'); } catch (e) { threwBadHabit = e instanceof RangeError; }
+        assert('parse_habit_rejects_invalid', threwBadHabit);
+
+        let threwBadPhase = false;
+        try { GaitCore.wrapPhase01(NaN); } catch (e) { threwBadPhase = e instanceof RangeError; }
+        assert('wrap_phase_rejects_nan', threwBadPhase);
+
+        let threwBadHeight = false;
+        try { GaitCore.createAnthropometrics({ heightM: 3.5 }); } catch (e) { threwBadHeight = e instanceof RangeError; }
+        assert('anthropometrics_rejects_extreme_height', threwBadHeight);
+
+        const panesDual = GaitCore.computeViewportPanes('split_compare', 1201, 700);
+        assert('scissor_split_exact_width', panesDual.panes.length === 2 && panesDual.panes[0].width + panesDual.panes[1].width === 1201);
+
+        const series = GaitCore.buildCycleWaveformSeries(registry, 'overstride', 100);
+        assert('waveform_series_length', series.sampleCount === 100 && series.vGrfBw.length === 100);
+        let finiteSeries = true;
+        for (let si = 0; si < series.sampleCount; si += 1) {
+          if (!Number.isFinite(series.kneeDeg[si]) || !Number.isFinite(series.vGrfBw[si]) || !Number.isFinite(series.stress01[si])) {
+            finiteSeries = false;
+            break;
+          }
+        }
+        assert('waveform_series_finite', finiteSeries);
+
+        assert('parse_camera_preset_valid', GaitCore.parseCameraPresetId('knee_closeup') === 'knee_closeup');
+        let threwBadPreset = false;
+        try { GaitCore.parseCameraPresetId('overhead'); } catch (e) { threwBadPreset = e instanceof RangeError; }
+        assert('parse_camera_preset_rejects_invalid', threwBadPreset);
+
+        const heroActive = GaitCore.computeViewportPanes('hero_active', 1200, 700);
+        const heroHealthy = GaitCore.computeViewportPanes('hero_healthy', 1200, 700);
+        assert('hero_panes_valid', heroActive.panes[0].role === 'active' && heroHealthy.panes[0].role === 'healthy');
+        let threwBadLayout = false;
+        try { GaitCore.computeViewportPanes('quad', 1200, 700); } catch (e) { threwBadLayout = e instanceof RangeError; }
+        assert('compute_panes_rejects_invalid', threwBadLayout);
+
+        let threwUnvalidated = false;
+        try { GaitCore.getHabitProfile({ __validated: false, byId: {} }, 'healthy'); } catch (e) { threwUnvalidated = e instanceof TypeError; }
+        assert('registry_gate_rejects_unvalidated', threwUnvalidated);
+
+        const cross15 = GaitCore.solveGaitFrame(registry, 'crossover_valgus', 0.15);
+        assert('crossover_solved_hip_adduction', cross15.right.anglesDeg.hipAdduction >= 15, 'add=' + cross15.right.anglesDeg.hipAdduction.toFixed(2));
+
+        document.getElementById('test-output').textContent = JSON.stringify({
+          status: 'ALL_TESTS_PASSED',
+          checksExecuted: report.checksExecuted,
+          unitAssertions: results.length,
+          summaryByHabit: report.summaryByHabit,
+        }, null, 2);
+      } catch (err) {
+        document.getElementById('test-output').textContent = 'TEST_ERROR: ' + err.stack;
+      }
+    })();
+  </script>
+</body>
+</html>
